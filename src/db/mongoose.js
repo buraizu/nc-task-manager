@@ -1,0 +1,11 @@
+const mongoose = require('mongoose')
+
+mongoose.connect('mongodb://127.0.0.1:27017/task-manager-api', {   // db name must be provided in url
+    useNewUrlParser: true,
+    useCreateIndex: true,  //  Ensures indices are created
+    useFindAndModify: false
+})
+
+
+
+
