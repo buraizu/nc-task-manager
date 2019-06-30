@@ -1,8 +1,9 @@
 const mongoose = require('mongoose')
 
-mongoose.connect(process.env.MONGODB_URL, {   // db name must be provided in url
+// db name must be provided in url
+mongoose.connect(process.env.MONGODB_URL, {   
     useNewUrlParser: true,
-    useCreateIndex: true,  //  Ensures indices are created
+    useCreateIndex: true,  
     useFindAndModify: false
 })
 
