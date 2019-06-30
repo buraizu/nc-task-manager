@@ -2,7 +2,9 @@ const mongoose = require('mongoose')
 const validator = require('validator')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const Task = require('./task')
 
+// 2nd arg is options object
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -46,7 +48,19 @@ const userSchema = new mongoose.Schema({
             type: String,
             required: true
         }
-    }]
+    }],
+    avatar: {
+        type: Buffer
+    }
+}, {
+    timestamps: true
+})
+
+// establishes relationship, but doesn't change database
+userSchema.virtual('tasks', {
+    ref: 'Task',
+    localField: '_id',
+    foreignField: 'owner'
 })
 
 // 'methods' refers to instance methods
@@ -64,8 +78,10 @@ userSchema.methods.toJSON = function () {
     const user = this
     const userObject = user.toObject()  // toObject() provided by mongoose
 
+    // these are removed from profile response, for security and speed
     delete userObject.password
     delete userObject.tokens
+    delete userObject.avatar  
 
     return userObject
 }
@@ -106,7 +122,15 @@ userSchema.pre('save', async function (next) {   // Will run before user is save
         user.password = await bcrypt.hash(user.password, 8)
     }
 
-    next()   // Required to end function, due to possibility of async operations ongoing
+    next()   // Required to end function, due to possibility of other async operations ongoing
+})
+
+// Delete user tasks when user is removed
+userSchema.pre('remove', async function (next) {
+    const user = this
+    
+    await Task.deleteMany({ owner: user._id })
+    next()
 })
 
 const User = mongoose.model('User', userSchema)
